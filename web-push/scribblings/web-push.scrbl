@@ -51,3 +51,27 @@ This library provides implementations of @rfc8188 and @|rfc8291|.
  key they should use to decrypt the data. The @emph{key id} may be at
  most 255 bytes long.
 }
+
+@subsection{Message Encryption for Web Push}
+@defmodule[crypto/web-push]
+
+@defproc[
+ (web-push-encrypt
+  [in input-port?]
+  [out output-port?]
+  [#:salt salt bytes? (crypto-random-bytes 16)]
+  [#:auth-secret auth-secret bytes?]
+  [#:private-key as-private pk-key? (generate-ecdh-private-key)]
+  [#:user-agent-key ua-public bytes?]
+  [#:factories factories (or/c crypto-factory? (listof crypto-factory?)) (crypto-factories)])
+ void?]{
+
+ Encrypts the contents of @racket[in] and writes the output
+ to @racket[out] after exchanging the @racket[as-private] and
+ @racket[ua-public] keys in order to generate a shared encryption
+ secret.
+
+ If @racket[#:private-key] is not provided, a key is generated
+ automatically on every invocation. This is the normal use case.
+ Do not reuse keys outside of testing scenarios.
+}

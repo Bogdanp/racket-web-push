@@ -1,16 +1,9 @@
 #lang racket/base
 
-(require base64
-         crypto/http-ece
+(require crypto/http-ece
          crypto/libcrypto
-         rackunit)
-
-(define (base64-urldecode str)
-  (base64-decode #:endcodes 'url str))
-
-(define (base64-urlencode bs)
-  (bytes->string/utf-8
-   (base64-encode #:endcodes 'url bs)))
+         rackunit
+         "common.rkt")
 
 ;; https://datatracker.ietf.org/doc/html/rfc8188#section-3.1
 (test-case "decrypt example 1"
