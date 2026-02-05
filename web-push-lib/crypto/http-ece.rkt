@@ -13,7 +13,7 @@
         [#:factories (or/c crypto-factory? (listof crypto-factory?))]
         void?)]
   [http-ece-encrypt
-   (->* [input-port? bytes? output-port?]
+   (->* [input-port? output-port? bytes?]
         [#:salt bytes?
          #:key-id bytes?
          #:record-size (integer-in 18 (sub1 (expt 2 31)))
@@ -39,7 +39,7 @@
       (write-bytes (unpad decrypted-bs delimiter) out))))
 
 (define (http-ece-encrypt
-         in secret out
+         in out secret
          #:salt [salt (crypto-random-bytes 16)]
          #:key-id [keyid #""]
          #:record-size [rs 4096]
@@ -58,10 +58,11 @@
   (define ci (get-cipher '(aes gcm) factories))
   (define rs-17 (- rs 17))
   (define rs-16 (- rs 16))
-  (for ([(record-bs idx) (in-indexed (in-producer (λ () (read-bytes rs-17 in)) eof))])
+  (define record-bs (make-bytes rs-17))
+  (for ([(n-read idx) (in-indexed (in-producer (λ () (read-bytes-avail! record-bs in)) eof))])
     (define last? (eof-object? (peek-byte in)))
     (define delimiter (if last? #x02 #x01))
-    (define padded-bs (pad record-bs delimiter (if last? 0 rs-16)))
+    (define padded-bs (pad record-bs delimiter (if last? 0 rs-16) 0 n-read))
     (define encrypted-bs (encrypt ci prk (iv nonce idx) padded-bs))
     (write-bytes encrypted-bs out)))
 
@@ -99,10 +100,11 @@
     #;signed? #f
     #;big-endian? #t)))
 
-(define (pad bs delim len)
-  (define padding
-    (make-bytes (max 0 (- len (bytes-length bs) 1))))
-  (bytes-append bs (bytes delim) padding))
+(define (pad bs delim len [start 0] [end (bytes-length bs)])
+  (bytes-append
+   (subbytes bs start end)
+   (bytes delim)
+   (make-bytes (max 0 (- len (- end start) 1)))))
 
 (define (unpad bs delim)
   (match (for*/first ([p (in-range (sub1 (bytes-length bs)) -1 -1)]
