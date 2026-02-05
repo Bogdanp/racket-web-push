@@ -1,6 +1,7 @@
 #lang scribble/manual
 
-@(require (for-label crypto/http-ece
+@(require (for-label crypto
+                     crypto/http-ece
                      racket/base
                      racket/contract/base
                      racket/random))

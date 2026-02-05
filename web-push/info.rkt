@@ -6,7 +6,9 @@
   '("base"
     "web-push-lib"))
 (define build-deps
-  '("racket-doc"
+  '("crypto-doc"
+    "crypto-lib"
+    "racket-doc"
     "scribble-lib"))
 (define implies
   '("web-push-lib"))
