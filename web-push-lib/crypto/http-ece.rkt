@@ -109,7 +109,7 @@
                       [b (in-value (bytes-ref bs p))]
                       #:unless (zero? b))
            (cons p b))
-    [#f (error 'unpad "no padding")]
+    [#f (error 'unpad "no delimiter")]
     [(cons p (== delim)) (subbytes bs 0 p)]
     [_ (error 'unpad "invalid delimiter")]))
 
