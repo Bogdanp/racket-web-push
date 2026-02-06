@@ -78,3 +78,12 @@
                       (url-host u)
                       (url-port u))
               (url-host u))))
+
+(module+ main
+  (require base64 crypto/libcrypto)
+  (crypto-factories libcrypto-factory)
+  (define pk (generate-ecdh-private-key))
+  (define-values (pub-bs priv-bs)
+    (encode-ecdh-private-key pk))
+  (printf "Public Key:~n~a~n~n" (base64-encode #:endcodes 'url pub-bs))
+  (printf "Private Key:~n~a~n" (base64-encode #:endcodes 'url priv-bs)))
