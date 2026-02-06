@@ -4,12 +4,12 @@
          racket/match)
 
 (provide
- prime256v1-curve-oid
  generate-ecdh-private-key
  decode-ecdh-private-key
  decode-ecdh-public-key
  encode-ecdh-private-key)
 
+;; XXX: It would be nice if crypto-lib made curve-alias->oid public.
 (define prime256v1-curve-oid
   '(1 2 840 10045 3 1 7))
 
