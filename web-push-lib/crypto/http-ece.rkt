@@ -2,7 +2,8 @@
 
 (require crypto
          racket/contract/base
-         racket/match)
+         racket/match
+         "web-push/private/contract.rkt")
 
 (provide
  (contract-out
@@ -10,14 +11,14 @@
    (->* [input-port?
          output-port?
          (or/c bytes? (-> bytes? bytes?))]
-        [#:factories (or/c crypto-factory? (listof crypto-factory?))]
+        [#:factories crypto-factory/c]
         void?)]
   [http-ece-encrypt
    (->* [input-port? output-port? bytes?]
         [#:salt bytes?
          #:key-id bytes?
          #:record-size (integer-in 18 (sub1 (expt 2 31)))
-         #:factories (or/c crypto-factory? (listof crypto-factory?))]
+         #:factories crypto-factory/c]
         void?)]))
 
 (define (http-ece-decrypt

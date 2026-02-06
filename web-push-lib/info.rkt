@@ -5,4 +5,5 @@
 (define collection 'multi)
 (define deps
   '("base"
+    "base64-lib"
     "crypto-lib"))

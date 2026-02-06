@@ -8,6 +8,7 @@
 (define build-deps
   '("crypto-doc"
     "crypto-lib"
+    "net-doc"
     "racket-doc"
     "scribble-lib"))
 (define implies

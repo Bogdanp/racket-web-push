@@ -1,32 +1,18 @@
 #lang racket/base
 
-(require crypto
-         crypto/libcrypto
-         crypto/pem
+(require crypto/libcrypto
+         crypto/vapid
          crypto/web-push
-         racket/match
-         racket/port
          rackunit
          "common.rkt")
 
-(define (decode-pem str)
-  (match-define (cons _label pem)
-    (call-with-input-string str read-pem))
-  (datum->pk-key pem 'PrivateKeyInfo libcrypto-factory))
-
 ;; https://datatracker.ietf.org/doc/html/rfc8291#section-5
 (test-case "encrypt example 1"
-  ;; Converted to PEM format using Claude.
   (define as-private-key
-    (decode-pem
-     #<<PEM
------BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgyfWPiYE+n46HLnH0
-KqZOF1fJJU3MYrct3AELtAQ+oRyhRANCAAT+M/SrDepxkU21WCP3O1SUj0EwbZIH
-Mtu5pZpTKGSCIA5Zent7wmC6HCJ5mFgJkuk5cwAvMBKiiujwa7t45ewP
------END PRIVATE KEY-----
-PEM
-     ))
+    (vapid-key-data->pk
+     (base64-urldecode "BP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8")
+     (base64-urldecode "yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw")
+     libcrypto-factory))
   (define in (open-input-string "When I grow up, I want to be a watermelon"))
   (define out (open-output-bytes))
   (web-push-encrypt

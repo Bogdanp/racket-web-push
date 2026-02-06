@@ -2,7 +2,9 @@
 
 (require crypto
          racket/contract/base
-         "http-ece.rkt")
+         "http-ece.rkt"
+         "web-push/private/contract.rkt"
+         "web-push/private/pk.rkt")
 
 (provide
  (contract-out
@@ -13,11 +15,8 @@
          #:user-agent-key bytes?]
         [#:salt bytes?
          #:private-key pk-key?
-         #:factories (or/c crypto-factory? (listof crypto-factory?))]
+         #:factories crypto-factory/c]
         void?)]))
-
-(define prime256v1-curve-oid
-  '(1 2 840 10045 3 1 7))
 
 (define (web-push-encrypt
          in out
@@ -45,11 +44,3 @@
    #:salt salt
    #:key-id as-public-bs
    #:factories factories))
-
-(define (decode-ecdh-public-key bs [factories (crypto-factories)])
-  (datum->pk-key `(ec public ,prime256v1-curve-oid ,bs) 'rkt-public factories))
-
-(define (generate-ecdh-private-key factories)
-  (generate-private-key
-   (get-pk 'ec factories)
-   '((curve "prime256v1"))))
