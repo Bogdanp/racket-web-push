@@ -6,6 +6,7 @@
   '("base"))
 (define build-deps
   '("base64-lib"
+    "crypto-lib"
     "rackunit-lib"
     "web-push-lib"))
 (define update-implies
