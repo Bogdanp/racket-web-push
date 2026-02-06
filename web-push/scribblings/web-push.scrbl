@@ -60,6 +60,21 @@ This library provides implementations of @rfc8188 and @|rfc8291|.
 @defmodule[crypto/web-push]
 
 @defproc[
+ (web-push-decrypt
+  [in input-port?]
+  [out output-port?]
+  [#:auth-secret auth-secret bytes?]
+  [#:private-key ua-private pk-key?]
+  [#:factories factores (or/c crypto-factory? (listof crypto-factory?)) (crypto-factories)])
+ void?]{
+
+  Decrypts the contents of @racket[in] and writes the output to
+  @racket[out] after exchanging the @racket[ua-private] key with the
+  @tt{as-private} key located in the @tt{keyid} field in the HTTP ECE
+  header of @racket[in], using @racket[auth-secret] as a salt.
+}
+
+@defproc[
  (web-push-encrypt
   [in input-port?]
   [out output-port?]
@@ -72,12 +87,10 @@ This library provides implementations of @rfc8188 and @|rfc8291|.
 
  Encrypts the contents of @racket[in] and writes the output
  to @racket[out] after exchanging the @racket[as-private] and
- @racket[ua-public] keys in order to generate a shared encryption
- secret.
-
- If @racket[#:private-key] is not provided, a key is generated
- automatically on every invocation. This is the normal use case.
- Do not reuse keys outside of testing scenarios.
+ @racket[ua-public] keys, using @racket[auth-secret] as a salt.
+ When @racket[#:private-key] is not provided, a key is generated
+ automatically on every invocation. This is the normal use case. Do not
+ reuse keys outside of testing scenarios.
 }
 
 @subsection{Voluntary Application Server Identification (VAPID) for Web Push}

@@ -8,6 +8,13 @@
 
 (provide
  (contract-out
+  [web-push-decrypt
+   (->* [input-port?
+         output-port?
+         #:auth-secret bytes?
+         #:private-key pk-key?]
+        [#:factories crypto-factory/c]
+        void?)]
   [web-push-encrypt
    (->* [input-port?
          output-port?
@@ -17,6 +24,23 @@
          #:private-key pk-key?
          #:factories crypto-factory/c]
         void?)]))
+
+(define (web-push-decrypt
+         in out
+         #:auth-secret auth-secret
+         #:private-key ua-private
+         #:factories [factories (crypto-factories)])
+  (define ua-public (pk-key->public-only-key ua-private))
+  (define ua-public-bs (cadddr (pk-key->datum ua-public 'rkt-public)))
+  (http-ece-decrypt
+   in out
+   (lambda (as-public-bs)
+     (define as-public (decode-ecdh-public-key as-public-bs factories))
+     (define shared-secret (pk-derive-secret ua-private as-public))
+     (define auth-params (make-auth-params ua-public-bs as-public-bs))
+     (define hmac-sha256 (get-kdf '(hkdf sha256) factories))
+     (kdf hmac-sha256 shared-secret auth-secret auth-params))
+   #:factories factories))
 
 (define (web-push-encrypt
          in out
@@ -29,14 +53,7 @@
   (define as-public-bs (cadddr (pk-key->datum as-public 'rkt-public)))
   (define ua-public (decode-ecdh-public-key ua-public-bs factories))
   (define shared-secret (pk-derive-secret as-private ua-public))
-  (define auth-info
-    (bytes-append
-     #"WebPush: info\x00"
-     ua-public-bs
-     as-public-bs))
-  (define auth-params
-    `((info ,auth-info)
-      (key-size 32)))
+  (define auth-params (make-auth-params ua-public-bs as-public-bs))
   (define hmac-sha256 (get-kdf '(hkdf sha256) factories))
   (define secret (kdf hmac-sha256 shared-secret auth-secret auth-params))
   (http-ece-encrypt
@@ -44,3 +61,12 @@
    #:salt salt
    #:key-id as-public-bs
    #:factories factories))
+
+(define (make-auth-params ua-public-bs as-public-bs)
+  (define auth-info
+    (bytes-append
+     #"WebPush: info\x00"
+     ua-public-bs
+     as-public-bs))
+  `((info ,auth-info)
+    (key-size 32)))
