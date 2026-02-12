@@ -80,10 +80,28 @@
               (url-host u))))
 
 (module+ main
-  (require base64 crypto/libcrypto)
+  (require base64
+           crypto/libcrypto
+           racket/cmdline)
   (crypto-factories libcrypto-factory)
-  (define pk (generate-ecdh-private-key))
-  (define-values (pub-bs priv-bs)
-    (encode-ecdh-private-key pk))
-  (printf "Public Key:~n~a~n~n" (base64-encode #:endcodes 'url pub-bs))
-  (printf "Private Key:~n~a~n" (base64-encode #:endcodes 'url priv-bs)))
+  (command-line
+   #:args [command . args]
+   (case command
+     [("generate-vapid-keys")
+      (define pk (generate-ecdh-private-key))
+      (define-values (pub-bs priv-bs)
+        (encode-ecdh-private-key pk))
+      (printf "Public Key:~n~a~n~n" (base64-encode #:endcodes 'url pub-bs))
+      (printf "Private Key:~n~a~n" (base64-encode #:endcodes 'url priv-bs))]
+     [("send-notification")
+      (parameterize ([current-command-line-arguments (list->vector args)])
+        (with-handlers ([(lambda (e)
+                           (and (exn:fail? e)
+                                (regexp-match? #rx"unknown module" (exn-message e))))
+                         (lambda (_)
+                           (eprintf "error: send-notification tool missing~n hint: install the web-push-tool-lib package~n")
+                           (exit 1))])
+          (dynamic-require '(submod (lib "crypto/web-push/private/tool.rkt") main) #f)))]
+     [else
+      (eprintf "error: valid commands are generate-vapid-keys and send-notification")
+      (exit 1)])))
