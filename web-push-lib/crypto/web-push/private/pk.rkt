@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require crypto
+         crypto/util/asn1
          racket/match)
 
 (provide
@@ -9,14 +10,15 @@
  decode-ecdh-private-key
  decode-ecdh-public-key)
 
-;; XXX: It would be nice if crypto-lib made curve-alias->oid public.
+(define prime256v1-curve-name
+  "NIST P-256")
 (define prime256v1-curve-oid
-  '(1 2 840 10045 3 1 7))
+  (curve-name->oid prime256v1-curve-name))
 
 (define (generate-ecdh-private-key [factories (crypto-factories)])
   (generate-private-key
    (get-pk 'ec factories)
-   '((curve "prime256v1"))))
+   `((curve ,prime256v1-curve-name))))
 
 ;; Returns the raw, uncompressed public key (ANSI X9.62) and the private
 ;; key encoded as bytes in big endian order.

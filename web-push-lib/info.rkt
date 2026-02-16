@@ -6,4 +6,4 @@
 (define deps
   '("base"
     "base64-lib"
-    "crypto-lib"))
+    ["crypto-lib" #:version "1.10"]))
