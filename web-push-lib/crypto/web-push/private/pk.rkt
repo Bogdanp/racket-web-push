@@ -11,7 +11,7 @@
  decode-ecdh-public-key)
 
 (define prime256v1-curve-name
-  "NIST P-256")
+  'prime256v1)
 (define prime256v1-curve-oid
   (curve-name->oid prime256v1-curve-name))
 
